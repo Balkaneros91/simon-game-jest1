@@ -3,8 +3,12 @@ const {
     newGame,
     showScore,
     addTurn,
-    lightsOn
+    lightsOn,
+    showTurns,
+    playerTurn
 } = require('../game');
+
+jest.spyOn(window, 'alert').mockImplementation(() => { });
 
 beforeAll(() => {
     let fs = require('fs');
@@ -30,6 +34,20 @@ describe('game object contains correct keys', () => {
     test('choices contain correct IDs', () => {
         expect(game.choices).toEqual(['button1', 'button2', 'button3', 'button4']);
     });
+    test('turnNumber key exists', () => {
+        expect('turnNumber' in game).toBe(true);
+    });
+
+    // last challenge
+    test("lastButton key exists", () => {
+        expect("lastButton" in game).toBe(true);
+    });
+    test("turnInProgress key exists", () => {
+        exppect("turnInProgress" in game ).toBe(true);
+    });
+    test("turnInProgress key value is false", () => {
+        expect("turnInProgress" in game).toBe(true);
+    });
 });
 
 describe('new game works correctly', () => {
@@ -43,6 +61,7 @@ describe('new game works correctly', () => {
     test('should set game score to zero', () => {
         expect(game.score).toEqual(0);
     });
+
     //  WRONG I just had to import newGame in js and js.test files  !!!
     // ------------------------------------------------------------------------
     // test('should empty the computer sequence', () => {
@@ -51,7 +70,7 @@ describe('new game works correctly', () => {
     // test("should empty the player's moves array", () => {
     //     expect(game.playerMoves).toEqual(0);
     // });
-
+    // ----------------------------------------------------------------------------
     // REPLACING THIS ONE !!! when AddTurn function 
     // test('should clear the computer sequence array', () => {
     //     expect(game.currentGame.length).toBe(0); // toEqual  works as well
@@ -65,6 +84,13 @@ describe('new game works correctly', () => {
     });
     test("should display zero for the element with id of score", () => {
         expect(document.getElementById('score').innerText).toEqual(0); // toEqual  works as well
+    });
+
+    test('expecting data-listener to be true', () => {
+        const elements = document.getElementsByClassName('circle');
+        for (let element of elements) {
+            expect(element.getAttribute('data-listener')).toEqual('true');
+        }
     });
 });
 
@@ -90,4 +116,38 @@ describe('gameplay works correctly', () => {
         lightsOn(game.currentGame[0]);
         expect(button.classList).toContain('light');
     });
+    test('showTurns should update game.turnNumber', () => {
+        game.turnNumber = 42;
+        showTurns();
+        expect(game.turnNumber).toBe(0);
+    });
+    test('should increment the score if the turn is correct', () => {
+        game.playerMoves.push(game.currentGame[0]);
+        playerTurn();
+        expect(game.score).toBe(1);
+    });
+
+    test("should call an alert if the move is wrong", () => {
+        game.playerMoves.push('wrong');
+        playerTurn();
+        expect(window.alert).toBeCalledWith('Wrong move!');
+    });
+    test("should toggle turnInProgress to true", () => {
+        showTurns();
+        expect(game.turnInProgress).toBe(true);
+    });
+    test("clicking during the computer sequence should fail", () => {
+        showTurns();
+        game.lastButton = "";
+        document.getElementById("button2").click();
+        expect(game.lastButton).toEqual("");
+    });
 });
+
+
+
+// test for lastButton and turnInProgress.
+// code that adds these two to the game object 
+//  game object contains correct keys section
+// lastButton initiated with empty string
+//  turnInProgress initiated with Boolean FALSE value 
